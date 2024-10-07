@@ -1,6 +1,6 @@
 'use strict';
 
-// DOM elementer
+// DOM elements
 const checkButton = document.querySelector('.btn.check');
 const guessInput = document.querySelector('.guess');
 const messageDisplay = document.querySelector('.message');
@@ -8,39 +8,55 @@ const numberDisplay = document.querySelector('.number');
 const againButton = document.querySelector('.btn.again');
 const scoreDisplay = document.querySelector('.score');
 const highscoreDisplay = document.querySelector('.highscore');
+const listCheck = document.getElementById('listCheck');  // Changed to getElementById
 
-// Audio elementer for lyd effekter
+// Audio elements for sound effects
 const winningSound = document.getElementById('Winning');
 const losingSound = document.getElementById('Loosing');
 const mistakeSound = document.getElementById('Mistake');
 
-// Spil variabeler
-let correctNumber = Math.floor(Math.random() * 20) + 1;  // Random nummer mellem 1 og 20
+// Game variables
+let correctNumber = Math.floor(Math.random() * 20) + 1;  // Random number between 1 and 20
 let score = 20;  // Starting score
 let highscore = 0;  // Initial highscore
+let guessHistory = [];  // Array to store guess history
 
-// Function som logger ud en besked
+// Function to display a message
 const displayMessage = function(message) {
-    messageDisplay.textContent = message;  // Updater besked displayet
+    messageDisplay.textContent = message;  // Update message display
 };
 
-// Læser spilleren svar og konvertere det til nummer
+// Reading player's guess and converting it to a number
 checkButton.addEventListener('click', function() {
-    const userGuess = Number(guessInput.value); //Konvertere input som nummer
+    const userGuess = Number(guessInput.value);  // Convert input to a number
 
-    // Tjek for forkert input
+    // Check for invalid input
     if (!userGuess || userGuess < 1 || userGuess > 20) {
-        mistakeSound.play();  // Spil 'mistake' lyd
+        mistakeSound.play();  // Play 'mistake' sound
         displayMessage('😡 Please enter a valid number between 1 and 20!');
         guessInput.value = '';
-        return;  // Log ud functionen
+        return;  // Exit the function
     }
 
-    // Når spilleren vinder
+    // Push user's guess into the history array
+    guessHistory.push(userGuess);
+
+    // Clear the history list and redisplay the updated guess history
+    listCheck.innerHTML = "";  // Clear the current list
+
+    // Loop through the guessHistory array and append each guess to the list
+    guessHistory.forEach(function(guess) {
+        listCheck.insertAdjacentHTML('beforeend', `<li>${guess}</li>`);
+    });
+
+    // Clear the input field after each guess
+    guessInput.value = '';
+
+    // When the player wins
     if (userGuess === correctNumber) {
         displayMessage('🥳 Correct Number!');
         numberDisplay.textContent = correctNumber;
-        document.body.classList.add('gold-background'); //Tilføj guldbaggrunden
+        document.body.classList.add('gold-background');  // Add gold background
         winningSound.play();
 
         // Check if the current score is greater than the highscore
@@ -49,18 +65,17 @@ checkButton.addEventListener('click', function() {
             highscoreDisplay.textContent = highscore;  // Update highscore display
         }
 
-        // Ryd input fæltet hvis man vinder
-        guessInput.value = '';
+        // Disable the input field if the user wins
+        guessInput.disabled = true;
     } else {
-        // Hvis gættet er forkert
+        // If the guess is wrong
         score--;  // Decrease score by 1
-        displayMessage(userGuess > correctNumber ? '📈 Too high!' : '📉 Too low!');  // Giver feedback
-        guessInput.value = '';  // Ryd inputfæltet
+        displayMessage(userGuess > correctNumber ? '📈 Too high!' : '📉 Too low!');  // Give feedback
 
-        // Opdater score display
+        // Update score display
         scoreDisplay.textContent = score;
 
-        // Tjek scoren er 0 og skriv at spillet er slut
+        // Check if score is 0 and end the game
         if (score <= 0) {
             displayMessage('😢 Game Over! Click "Again!" to restart.');
             losingSound.play();
@@ -70,20 +85,23 @@ checkButton.addEventListener('click', function() {
     }
 });
 
-// Functionen som arbejder med Again! button click (reset everything)
+// Function to handle "Again!" button click (reset everything)
 againButton.addEventListener('click', function() {
-    // Reset alle værdier
-    score = 20;  // Reset scoren til 20
-    correctNumber = Math.floor(Math.random() * 20) + 1;  // Generate spillet til at vælge et nyt nummer
+    // Reset all values
+    score = 20;  // Reset score to 20
+    correctNumber = Math.floor(Math.random() * 20) + 1;  // Generate a new correct number
+    guessHistory = [];  // Clear guess history
 
     displayMessage('Start guessing...');
-    numberDisplay.textContent = '?';  //Gemmer det rigtige nummer
-    guessInput.value = '';  //ryder inputfæltet
-    scoreDisplay.textContent = score;  //Update scoren
-    highscoreDisplay.textContent = highscore;
-    guessInput.disabled = false; // Aktiver input til et nyt spil
+    numberDisplay.textContent = '?';  // Hide the correct number
+    guessInput.value = '';  // Clear the input field
+    scoreDisplay.textContent = score;  // Update score display
+    guessInput.disabled = false;  // Enable input for a new game
 
-    // Fjern guldbaggrund når man trykker 'Again'
+    // Clear the guess history display
+    listCheck.innerHTML = "";
+
+    // Remove any background colors when resetting
     document.body.classList.remove('gold-background');
     document.body.classList.remove('red-background');
 });
