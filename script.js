@@ -1,104 +1,128 @@
 'use strict';
 
-// DOM elements
-const checkButton = document.querySelector('.btn.check');
-const guessInput = document.querySelector('.guess');
-const messageDisplay = document.querySelector('.message');
-const numberDisplay = document.querySelector('.number');
-const againButton = document.querySelector('.btn.again');
-const scoreDisplay = document.querySelector('.score');
-const highscoreDisplay = document.querySelector('.highscore');
-const listCheck = document.getElementById('listCheck');  // Changed to getElementById
+// DOM elements, and there different ussage.
+const checkButton = document.querySelector('.btn.check'); // Button to check the guess
+const guessInput = document.querySelector('.guess'); // Input field for user's guess
+const messageDisplay = document.querySelector('.message'); // Area to display messages to the user
+const numberDisplay = document.querySelector('.number'); // Area to display the correct number
+const againButton = document.querySelector('.btn.again'); // Button to restart the game
+const scoreDisplay = document.querySelector('.score'); // Display for the number of tries left
+const highscoreDisplay = document.querySelector('.highscore'); // Display for the high score
+const listCheck = document.getElementById('listCheck'); // List to show the history of guesses
+
+
 
 // Audio elements for sound effects
+//Link for notes: https://www.w3schools.com/jsref/met_audio_play.asp
 const winningSound = document.getElementById('Winning');
 const losingSound = document.getElementById('Loosing');
 const mistakeSound = document.getElementById('Mistake');
 
-// Game variables
-let correctNumber = Math.floor(Math.random() * 20) + 1;  // Random number between 1 and 20
-let score = 20;  // Starting score
-let highscore = 0;  // Initial highscore
-let guessHistory = [];  // Array to store guess history
 
-// Function to display a message
+
+// Game variables
+//Link for notes: https://www.w3schools.com/jsref/jsref_random.asp
+let correctNumber = Math.floor(Math.random() * 20) + 1; // Generate a random number between 1 and 20
+let score = 10; // The starting score, which is the number of tries left
+let highscore = 0; // The first high score, when the game has not been played
+let guessHistory = []; // Array to store the history of guesses
+
+
+
+// Function to display a message,
 const displayMessage = function(message) {
-    messageDisplay.textContent = message;  // Update message display
+    messageDisplay.textContent = message;
 };
 
-// Reading player's guess and converting it to a number
+
+
+// Update the score display function, so that it shows the current number of tries left
+const updateScoreDisplay = function() {
+    scoreDisplay.textContent = score;
+};
+
+
+
+// Initialize game. This calls the function, so that the initial tries is 10
+updateScoreDisplay();
+
+
+
+// This reads the player's guess and converts it into a number
 checkButton.addEventListener('click', function() {
-    const userGuess = Number(guessInput.value);  // Convert input to a number
+    const userGuess = Number(guessInput.value);
 
     // Check for invalid input
     if (!userGuess || userGuess < 1 || userGuess > 20) {
-        mistakeSound.play();  // Play 'mistake' sound
+        mistakeSound.play();
         displayMessage('😡 Please enter a valid number between 1 and 20!');
-        guessInput.value = '';
-        return;  // Exit the function
+        guessInput.value = ''; //This clears the input field
+        return; // Exit the function to stop further processing
     }
 
-    // Push user's guess into the history array
+    // This push the players input into the history array
     guessHistory.push(userGuess);
 
-    // Clear the history list and redisplay the updated guess history
-    listCheck.innerHTML = "";  // Clear the current list
+    // This clears the history list, and display the updated guess history
+    listCheck.innerHTML = "";
 
-    // Loop through the guessHistory array and append each guess to the list
+    //This loops through the guessHistory array, which iterates the array, and it adds each guess to the list
     guessHistory.forEach(function(guess) {
-        listCheck.insertAdjacentHTML('beforeend', `<li>${guess}</li>`);
+        listCheck.insertAdjacentHTML('beforeend', `<li>${guess}</li>`); // Each guess gets added to the list
     });
 
-    // Clear the input field after each guess
+    // This clears and resets the input field after each guess
     guessInput.value = '';
 
-    // When the player wins
+    // If the player wins
     if (userGuess === correctNumber) {
         displayMessage('🥳 Correct Number!');
-        numberDisplay.textContent = correctNumber;
-        document.body.classList.add('gold-background');  // Add gold background
+        numberDisplay.textContent = correctNumber; //Display the correct number in the middle box
+        document.body.classList.add('gold-background');
         winningSound.play();
 
-        // Check if the current score is greater than the highscore
-        if (score > highscore) {
-            highscore = score;  // Update highscore
-            highscoreDisplay.textContent = highscore;  // Update highscore display
+        // This checks if the current score is larger the high score
+        if (score > highscore) { // If the current score is higher than the saved high score
+            highscore = score; // Update the high score
+            highscoreDisplay.textContent = highscore; // Update the high score display
         }
 
-        // Disable the input field if the user wins
+        // This blocks/diables the input field if the user wins
         guessInput.disabled = true;
     } else {
-        // If the guess is wrong
-        score--;  // Decrease score by 1
-        displayMessage(userGuess > correctNumber ? '📈 Too high!' : '📉 Too low!');  // Give feedback
+        // If the player guesses wrong
+        score--; // Decrease the score by 1
+        displayMessage(userGuess > correctNumber ? '📈 Too high!' : '📉 Too low!'); // This gives feedback on the guess
 
-        // Update score display
-        scoreDisplay.textContent = score;
+        // // This calls the function to update the number of tries left
+        updateScoreDisplay();
 
         // Check if score is 0 and end the game
         if (score <= 0) {
             displayMessage('😢 Game Over! Click "Again!" to restart.');
             losingSound.play();
             document.body.classList.add('red-background');
-            guessInput.disabled = true;  // Disable input if game over
+            guessInput.disabled = true; //This blocks/diables the input field if the user looses
         }
     }
 });
 
-// Function to handle "Again!" button click (reset everything)
+
+
+// This function handles the "Again!" button click (reset everything)
 againButton.addEventListener('click', function() {
-    // Reset all values
-    score = 20;  // Reset score to 20
-    correctNumber = Math.floor(Math.random() * 20) + 1;  // Generate a new correct number
-    guessHistory = [];  // Clear guess history
+    // This Reset all values
+    score = 10; // This resets the score to 10 (tries left)
+    correctNumber = Math.floor(Math.random() * 20) + 1;
+    guessHistory = [];
 
-    displayMessage('Start guessing...');
-    numberDisplay.textContent = '?';  // Hide the correct number
-    guessInput.value = '';  // Clear the input field
-    scoreDisplay.textContent = score;  // Update score display
-    guessInput.disabled = false;  // Enable input for a new game
+    displayMessage('Start guessing...'); // This shows the player a message to start playing
+    numberDisplay.textContent = '?'; // This hides the correct number by displaying '?'
+    guessInput.value = '';
+    updateScoreDisplay(); // Update the displayed number of tries left
+    guessInput.disabled = false; // This enables the input field for a new game
 
-    // Clear the guess history display
+    // This reset the guess history display
     listCheck.innerHTML = "";
 
     // Remove any background colors when resetting
